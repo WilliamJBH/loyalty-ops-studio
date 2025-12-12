@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { NavLink } from "react-router-dom";
 
 interface Props {
   children: ReactNode;
@@ -20,16 +21,16 @@ export function MainLayout({ children }: Props) {
 
         <nav>
           <p>
-            <a href="/">Dashboard</a>
+            <NavLink to="/">Dashboard</NavLink>
           </p>
           <p>
-            <a href="/promotions">Promotions</a>
+            <NavLink to="/promotions">Promotions</NavLink>
           </p>
           <p>
-            <a href="/simulator">Simulator</a>
+            <NavLink to="/simulator">Simulator</NavLink>
           </p>
           <p>
-            <a href="/metrics">Metrics</a>
+            <NavLink to="/metrics">Metrics</NavLink>
           </p>
         </nav>
       </aside>
