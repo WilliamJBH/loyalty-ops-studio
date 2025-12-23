@@ -1,7 +1,8 @@
-import type React from "react";
+import React, { useState } from "react";
 import { mockPromotions } from "./mockPromotions";
+import type { Promotion, PromotionType, PromotionStatus } from "./types";
 
-function StatusPill({ status }: { status: string }) {
+function StatusPill({ status }: { status: PromotionStatus }) {
   const style: React.CSSProperties = {
     display: "inline-block",
     padding: "2px 8px",
@@ -13,13 +14,66 @@ function StatusPill({ status }: { status: string }) {
   return <span style={style}>{status}</span>;
 }
 
-function formDate(iso: string) {
+function formatDate(iso: string) {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleDateString();
 }
 
 export function PromotionsPage() {
+  const [promotions, setPromotions] = useState<Promotion[]>(mockPromotions);
+  const [showForm, setShowForm] = useState(false);
+
+  const [name, setName] = useState("");
+  const [type, setType] = useState<PromotionType>("percentage");
+  const [discountValue, setDiscountValue] = useState<number>(0);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [category, setCategory] = useState("");
+
+  function handleCreatePromotion(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!name.trim()) {
+      alert("Name is required");
+      return;
+    }
+
+    if (discountValue <= 0) {
+      alert("Discount must be greater than 0");
+      return;
+    }
+
+    if (endDate <= startDate) {
+      alert("End date must be after start date");
+      return;
+    }
+
+    const now = new Date().toISOString();
+
+    const newPromotion: Promotion = {
+      id: `PROMO-${crypto.randomUUID()}`,
+      name,
+      type,
+      discountValue,
+      startDate: `${startDate}T00:00:00Z`,
+      endDate: `${endDate}T23:59:59Z`,
+      category,
+      status: "draft",
+      createdBy: "current.user",
+      updatedAt: now,
+    };
+
+    setPromotions((prev) => [newPromotion, ...prev]);
+
+    setName("");
+    setDiscountValue(0);
+    setStartDate("");
+    setEndDate("");
+    setCategory("");
+    setShowForm(false);
+  }
+
   return (
     <div>
       <h1>Promotions</h1>
@@ -28,6 +82,90 @@ export function PromotionsPage() {
         List of existing promotions (mock data). Later this will be connected to
         a real API.
       </p>
+
+      <button onClick={() => setShowForm(true)} disabled={showForm}>
+        New Promotion
+      </button>
+
+      {showForm && (
+        <div
+          style={{
+            margin: "16px 0",
+            padding: "16px",
+            border: "1px solid #ddd",
+            borderRadius: "12px",
+          }}
+        >
+          <p>
+            <strong>Create Promotion</strong>
+          </p>
+          <form onSubmit={handleCreatePromotion}>
+            <div>
+              <label>Name</label>
+              <br />
+              <input value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+
+            <div>
+              <label>Type</label>
+              <br />
+              <select
+                value={type}
+                onChange={(e) => setType(e.target.value as PromotionType)}
+              >
+                <option value="percentage">Percentage</option>
+                <option value="fixed">Fixed</option>
+                <option value="bxgy">Buy X Get Y</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Discount Value</label>
+              <br />
+              <input
+                type="number"
+                min={1}
+                value={discountValue}
+                onChange={(e) => setDiscountValue(Number(e.target.value))}
+              />
+            </div>
+
+            <div>
+              <label>Start Date</label>
+              <br />
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label>End Date</label>
+              <br />
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label>Category</label>
+              <br />
+              <input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              />
+            </div>
+
+            <button type="submit">Save</button>
+            <button type="button" onClick={() => setShowForm(false)}>
+              Cancel
+            </button>
+          </form>
+        </div>
+      )}
 
       <table
         style={{
@@ -53,7 +191,7 @@ export function PromotionsPage() {
         </thead>
 
         <tbody>
-          {mockPromotions.map((promo) => (
+          {promotions.map((promo) => (
             <tr key={promo.id}>
               <td style={tdStyle}>{promo.id}</td>
               <td style={tdStyle}>{promo.name}</td>
@@ -68,15 +206,24 @@ export function PromotionsPage() {
                   ? `$${promo.minTicketAmount}`
                   : "-"}
               </td>
-              <td style={tdStyle}>{formDate(promo.startDate)}</td>
-              <td style={tdStyle}>{formDate(promo.endDate)}</td>
-              <td style={tdStyle}>{formDate(promo.updatedAt)}</td>
+              <td style={tdStyle}>{formatDate(promo.startDate)}</td>
+              <td style={tdStyle}>{formatDate(promo.endDate)}</td>
+              <td style={tdStyle}>{formatDate(promo.updatedAt)}</td>
               <td style={tdStyle}>
-                <button style={btnStyle}>View</button>
+                <button style={btnStyle} onClick={() => alert("TODO: View")}>
+                  View
+                </button>
                 {""}
-                <button style={btnStyle}>Edit</button>
+                <button style={btnStyle} onClick={() => alert("TODO: Edit")}>
+                  Edit
+                </button>
                 {""}
-                <button style={btnDangerStyle}>Deactivate</button>
+                <button
+                  style={btnDangerStyle}
+                  onClick={() => alert("TODO: Deactivate")}
+                >
+                  Deactivate
+                </button>
               </td>
             </tr>
           ))}
