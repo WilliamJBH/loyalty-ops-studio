@@ -31,6 +31,29 @@ export function PromotionsPage() {
   const [endDate, setEndDate] = useState("");
   const [category, setCategory] = useState("");
 
+  function approvePromotion(id: string) {
+    const now = new Date().toISOString();
+
+    setPromotions((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, status: "approved", updatedAt: now } : p
+      )
+    );
+  }
+
+  function deactivatePromotion(id: string) {
+    const ok = confirm("Deactivate this promotion?");
+    if (!ok) return;
+
+    const now = new Date().toISOString();
+
+    setPromotions((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, status: "inactive", updatedAt: now } : p
+      )
+    );
+  }
+
   function handleCreatePromotion(e: React.FormEvent) {
     e.preventDefault();
 
@@ -218,12 +241,23 @@ export function PromotionsPage() {
                   Edit
                 </button>
                 {""}
-                <button
-                  style={btnDangerStyle}
-                  onClick={() => alert("TODO: Deactivate")}
-                >
-                  Deactivate
-                </button>
+                {promo.status === "draft" && (
+                  <button
+                    style={btnStyle}
+                    onClick={() => approvePromotion(promo.id)}
+                  >
+                    Approve
+                  </button>
+                )}
+                {""}
+                {promo.status === "approved" && (
+                  <button
+                    style={btnDangerStyle}
+                    onClick={() => deactivatePromotion(promo.id)}
+                  >
+                    Deactivate
+                  </button>
+                )}
               </td>
             </tr>
           ))}
